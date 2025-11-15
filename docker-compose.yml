@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  primary_db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: metricsdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - primary_data:/var/lib/postgresql/data
+
+  analytics_db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: analyticsdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - analytics_data:/var/lib/postgresql/data
+
+  seeder:
+    build: ./seeder
+    env_file: ./seeder/.env
+    depends_on:
+      - primary_db
+    command: ["node", "seeder.js"]
+    restart: "no"
+
+  aggregator:
+    build: ./aggregator
+    env_file: ./aggregator/.env
+    depends_on:
+      - seeder
+      - primary_db
+      - analytics_db
+    command: sh -c "while true; do node aggregator.js; sleep $AGG_INTERVAL_SECONDS; done"
+    restart: always
+
+  api:
+    build: ./api
+    env_file: ./api/.env
+    depends_on:
+      - analytics_db
+      - aggregator
+    ports:
+      - "3000:3000"
+
+volumes:
+  primary_data:
+  analytics_data:
