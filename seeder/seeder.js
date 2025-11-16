@@ -60,7 +60,7 @@ async function main() {
 
   const now = Date.now();
   const rows = [];
-  const minutes = 24 * 60 * 7; // 7 days
+  const minutes = 24 * 60 * 2; // 2 days
 
   for (let minute = 0; minute < minutes; minute++) {
     for (const server of SERVERS) {
@@ -69,7 +69,7 @@ async function main() {
         const ts = new Date(now - (minutes - minute) * 60 * 1000);
 
         rows.push({
-          text: `INSERT INTO raw.metrics (server_id, metric_type, metric_value, ts)
+          text: `INSERT INTO metrics (server_id, metric_type, metric_value, ts)
                  VALUES ($1, $2, $3, $4)`,
           values: [server, metric, value, ts],
         });
