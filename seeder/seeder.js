@@ -24,7 +24,7 @@ function randomNormal(base, variance) {
 // ----- SELECT BEHAVIOR FOR EACH METRIC -----
 
 function generateValue(server, metric, minute) {
-  const serverOffset = server === 'srv-3' ? 20 : 0;
+  const serverOffset = server === 'srv-3' ? 25 : 0;
 
   let base =
     {
@@ -35,8 +35,9 @@ function generateValue(server, metric, minute) {
     }[metric] + serverOffset;
 
   // CPU spikes every 2 hours
-  if (metric === 'cpu' && minute % 120 === 0) {
-    return base + Math.random() * 40 + 40;
+  if (metric === 'cpu') {
+    if (minute % 120 === 0)
+      return base + Math.random() * 40 + 40;
   }
 
   // Memory leak-like drift
@@ -45,8 +46,9 @@ function generateValue(server, metric, minute) {
   }
 
   // Massive IO bursts
-  if (metric === 'disk_io' && minute % 75 === 0) {
-    return base + Math.random() * 200;
+  if (metric === 'disk_io') {
+    if (minute % 75 === 0)
+      return base + Math.random() * 200;
   }
 
   return randomNormal(base, 10);

@@ -48,7 +48,7 @@ async function fetchAggregatedMetrics(startTs, endTs, server) {
 // ------------------------------------------------
 
 app.get('/insights', async (req, res) => {
-  //try {
+  try {
     const { start, end, server } = req.query;
 
     if (!start || !end) {
@@ -74,10 +74,10 @@ app.get('/insights', async (req, res) => {
       response,
       data: restructured,
     });
-  /*} catch (err) {
+  } catch (err) {
     console.error('Error:', err);
     res.status(500).json({ error: 'Server error', details: err.message });
-  }*/
+  }
 });
 
 // ------------------------------------------------
