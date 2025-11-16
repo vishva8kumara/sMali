@@ -1,12 +1,12 @@
-import express from 'express';
-import pg from 'pg';
-import dotenv from 'dotenv';
+const express = require('express');
+const pg = require('pg');
+const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-const realOpenAILLM = require('./llm');
+const generateInsightsLLM = require('./llm');
 
 // ------------------ DB CLIENT ------------------
 
@@ -26,19 +26,14 @@ analyticsDb.connect()
 // HELPERS
 // ------------------------------------------------
 
-async function fetchAggregatedMetrics(startTs, endTs) {
+async function fetchAggregatedMetrics(startTs, endTs, server) {
   const res = await analyticsDb.query(
-    `SELECT server_id,
-        metric_type,
-        ts,
-        avg_value,
-        min_value,
-        max_value,
-        p90_value
-    FROM analytics.aggregated_metrics
-    WHERE ts >= $1 AND ts <= $2
-    ORDER BY ts ASC`,
-    [startTs, endTs]
+    `SELECT server_id, metric_type, ts, avg_value, min_value, max_value
+    FROM aggregated_metrics
+    WHERE ts >= $1 AND ts <= $2`+
+	(server ? ' AND server_id = $3 ' : ' ')+
+    `ORDER BY ts ASC`,
+    ( server ? [startTs, endTs, server] : [startTs, endTs] )
   );
 
   return res.rows;
@@ -46,41 +41,15 @@ async function fetchAggregatedMetrics(startTs, endTs) {
 
 // --------------- LLM (MOCK OR REAL) ------------------
 
-async function generateInsightsLLM(aggregates) {
-  // For initial testing without LLM -> mock summary
-  if (!process.env.LLM_API_KEY) {
-    return mockInsights(aggregates);
-  }
-  else
-    return realOpenAILLM(aggregates);
-}
 
-function mockInsights(aggregates) {
-  const summary = [];
-
-  const byServer = {};
-  for (const row of aggregates) {
-    const key = row.server_id;
-    if (!byServer[key]) byServer[key] = [];
-    byServer[key].push(row);
-  }
-
-  for (const serverId of Object.keys(byServer)) {
-    summary.push(
-      `Server ${serverId} shows ${byServer[serverId].length} aggregated metric entries -- Mock LLM.`
-    );
-  }
-
-  return summary.join('\n');
-}
 
 // ------------------------------------------------
 // API ROUTE
 // ------------------------------------------------
 
 app.get('/insights', async (req, res) => {
-  try {
-    const { start, end } = req.query;
+  //try {
+    const { start, end, server } = req.query;
 
     if (!start || !end) {
       return res.status(400).json({
@@ -88,7 +57,7 @@ app.get('/insights', async (req, res) => {
       });
     }
 
-    const aggregates = await fetchAggregatedMetrics(start, end);
+    const aggregates = await fetchAggregatedMetrics(start, end, server);
 
     if (aggregates.length === 0) {
       return res.status(404).json({
@@ -96,19 +65,19 @@ app.get('/insights', async (req, res) => {
       });
     }
 
-    const insights = await generateInsightsLLM(aggregates);
+    const [ response, restructured ] = await generateInsightsLLM(aggregates);
 
     return res.json({
       start,
       end,
-      aggregates_count: aggregates.length,
-      aggregates,
-      insights,
+      //aggregates_count: aggregates.length,
+      response,
+      data: restructured,
     });
-  } catch (err) {
+  /*} catch (err) {
     console.error('Error:', err);
     res.status(500).json({ error: 'Server error', details: err.message });
-  }
+  }*/
 });
 
 // ------------------------------------------------

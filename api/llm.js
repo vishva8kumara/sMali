@@ -1,22 +1,40 @@
 
-import fetch from 'node-fetch';
+//const fetch = require('fetch');
 
-module.exports = async function realOpenAILLM(aggregates) {
+module.exports = async function generateInsightsLLM(aggregates) {
 
-  const text = JSON.stringify(aggregates, null, 2);
+  const restructured = restructureForLLM(aggregates);
+
+  // For initial testing without LLM -> mock summary
+  let insights;
+  if (!process.env.LLM_API_KEY) {
+    insights = mockInsights(restructured);
+  }
+  else
+    insights = await realOpenAILLM(restructured);
+
+  return [ insights, restructured ];
+
+};
+
+async function realOpenAILLM(restructured) {
+
+  const text = JSON.stringify(restructured, null, 2);
 
   const prompt = `
-You are an expert systems engineer. Analyze the following aggregated server metrics:
+You are an expert systems engineer. Analyze the following aggregated server metrics (cpu, memory, disk_io, net_io):
 
 ${text}
 
 Provide:
 - trends
 - anomalies
-- spikes or drifts
-- high-level recommendations
+- spikes, mem-leaks or drifts
+- high demand or low resources
 `;
+//- high-level recommendations
 
+  //console.log('Making API Request:', text);
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -33,4 +51,41 @@ Provide:
 
   return data.choices?.[0]?.message?.content || 'No insights generated.';
 
-};
+}
+
+function mockInsights(aggregates) {
+  const summary = [];
+
+  for (const serverId of Object.keys(aggregates)) {
+    summary.push(
+      `Server ${serverId} shows ${aggregates[serverId].length} aggregated metric entries -- Mock LLM.`
+    );
+  }
+
+  return summary.join('\n');
+}
+
+function restructureForLLM(rows) {
+  const result = {};
+
+  for (const r of rows) {
+    const server = r.server_id;
+    const ts = r.ts.toISOString();
+
+    if (!result[server]) result[server] = {};
+    if (!result[server][ts]) result[server][ts] = { ts: r.ts.getTime() };
+
+    if (!result[server][ts][r.metric_type]) {
+      result[server][ts][r.metric_type] = Number(Number(r.avg_value).toFixed(2));
+    }
+  }
+
+  // Convert timestamp objects → sorted arrays
+  for (const server of Object.keys(result)) {
+    const tsMap = result[server];
+    result[server] = Object.values(tsMap)
+      .sort((a, b) => new Date(a.ts) - new Date(b.ts));
+  }
+
+  return result;
+}
