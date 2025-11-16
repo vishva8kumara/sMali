@@ -54,8 +54,9 @@ module.exports = function(analyticsDb, rawDb) {
 			const min = values[0];
 			const max = values[values.length - 1];
 			const p90 = values[Math.floor(values.length * 0.9)];
+			const p80 = values[Math.floor(values.length * 0.8)];
 
-			result.push({ server_id, metric_type, avg, min, max, p90 });
+			result.push({ server_id, metric_type, avg, min, max, p90, p80 });
 		}
 
 		return result;
@@ -65,8 +66,8 @@ module.exports = function(analyticsDb, rawDb) {
 		for (const a of aggregates) {
 			await analyticsDb.query(
 				`INSERT INTO analytics.aggregated_metrics
-					(server_id, metric_type, ts, avg_value, min_value, max_value, p90_value)
-				VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+					(server_id, metric_type, ts, avg_value, min_value, max_value, p90_value, p80_value)
+				VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
 				[
 					a.server_id,
 					a.metric_type,
@@ -75,6 +76,7 @@ module.exports = function(analyticsDb, rawDb) {
 					a.min,
 					a.max,
 					a.p90,
+					a.p80,
 				]
 			);
 		}
