@@ -1,11 +1,12 @@
 import express from 'express';
 import pg from 'pg';
 import dotenv from 'dotenv';
-import fetch from 'node-fetch';
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+
+const realOpenAILLM = require('./llm');
 
 // ------------------ DB CLIENT ------------------
 
@@ -66,43 +67,11 @@ function mockInsights(aggregates) {
 
   for (const serverId of Object.keys(byServer)) {
     summary.push(
-      `Server ${serverId} shows ${byServer[serverId].length} aggregated metric entries with normal behaviour.`
+      `Server ${serverId} shows ${byServer[serverId].length} aggregated metric entries -- Mock LLM.`
     );
   }
 
   return summary.join('\n');
-}
-
-async function realOpenAILLM(aggregates) {
-  const text = JSON.stringify(aggregates, null, 2);
-
-  const prompt = `
-You are an expert systems engineer. Analyze the following aggregated server metrics:
-
-${text}
-
-Provide:
-- trends
-- anomalies
-- spikes or drifts
-- high-level recommendations
-`;
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.LLM_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: process.env.LLM_MODEL || 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
-
-  const data = await response.json();
-
-  return data.choices?.[0]?.message?.content || 'No insights generated.';
 }
 
 // ------------------------------------------------
