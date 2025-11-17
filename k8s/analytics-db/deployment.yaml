@@ -42,3 +42,18 @@ spec:
         - name: analytics-data
           persistentVolumeClaim:
             claimName: analytics-db-pvc
+  initContainers:
+    - name: init-raw-db
+      image: postgres:16
+      command:
+        - sh
+        - -c
+        - |
+          psql -v ON_ERROR_STOP=1 \
+              -h analytics-db \
+              -U postgres \
+              -d metricsdb \
+              -f /schema/analytics_schema.sql
+      volumeMounts:
+        - name: db-schema
+          mountPath: /schema
