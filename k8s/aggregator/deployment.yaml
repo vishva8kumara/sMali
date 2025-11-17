@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aggregator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aggregator
+  template:
+    metadata:
+      labels:
+        app: aggregator
+    spec:
+      containers:
+        - name: aggregator
+          image: docker.io/library/metrics-aggregator:latest
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: database-secrets
+          command: ["sh", "-c"]
+          args:
+            - |
+              while true; do
+                node aggregator.js;
+                sleep $AGG_INTERVAL_SECONDS;
+              done

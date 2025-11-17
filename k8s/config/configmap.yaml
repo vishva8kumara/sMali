@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  RAW_DB_HOST: primary-db
+  RAW_DB_PORT: "5432"
+  RAW_DB_NAME: "raw"
+  ANALYTICS_DB_HOST: analytics-db
+  ANALYTICS_DB_PORT: "5432"
+  ANALYTICS_DB_NAME: "analytics"
+  AGG_INTERVAL_MINUTES: "10"
+  AGG_INTERVAL_SECONDS: "600"
+  API_PORT: "3000"
+  LLM_MODEL: "gpt-4o-mini"

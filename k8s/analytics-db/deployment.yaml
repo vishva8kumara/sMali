@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-db
+  template:
+    metadata:
+      labels:
+        app: analytics-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          envFrom:
+            - secretRef:
+                name: database-secrets
+          env:
+            - name: POSTGRES_DB
+              value: analyticsdb
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: analytics-data
+      volumes:
+        - name: analytics-data
+          persistentVolumeClaim:
+            claimName: analytics-db-pvc

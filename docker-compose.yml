@@ -46,7 +46,6 @@ services:
     env_file: ./api/.env
     depends_on:
       - analytics_db
-      - aggregator
     ports:
       - "3000:3000"
 

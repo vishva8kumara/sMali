@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: primary-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: primary-db
+  template:
+    metadata:
+      labels:
+        app: primary-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          envFrom:
+            - secretRef:
+                name: database-secrets
+          env:
+            - name: POSTGRES_DB
+              value: metricsdb
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: primary-data
+      volumes:
+        - name: primary-data
+          persistentVolumeClaim:
+            claimName: primary-db-pvc
