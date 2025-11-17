@@ -3,7 +3,7 @@ const LOCK_ID = 987654; // arbitrary 32-bit integer
 module.exports = function dbHelper(analyticsDb, rawDb) {
 
 	this.startAtomic = async function() {
-		// Try to acquire the lock without waiting
+		// Try to acquire an advisory lock
 		const lock = await analyticsDb.query(
 			'SELECT pg_try_advisory_lock($1) AS acquired', [LOCK_ID]);
 
@@ -44,7 +44,7 @@ module.exports = function dbHelper(analyticsDb, rawDb) {
 	  return res.rows;
 	};
 
-	//	TO DO: Implement batch inserts. Multiple batches, not one large
+	//	TO DO: Implement batch inserts. Multiple batches instead single large batch
 	this.storeAggregates = async function(aggregates) {
 		for (const a of aggregates) {
 			await analyticsDb.query(

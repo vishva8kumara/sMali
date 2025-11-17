@@ -123,9 +123,14 @@ The API supports two modes:
 * **OpenAI mode**: Real LLM calls
 * **Mock mode**: Local predictable responses (offline testing)
 
-http://localhost:3000/insights?start=2025-11-15T10:00:00&end=2025-11-16T10:00:00
+Lists periods with data availble
+ http://localhost:3000/periods
 
-http://localhost:3000/insights?start=2025-11-15T10:00:00&end=2025-11-16T10:00:00&server=srv-2
+Analyze all servers for a given period
+ http://localhost:3000/insights?start=2025-11-15T10:00:00&end=2025-11-16T10:00:00
+
+Analyze one server for a given period
+ http://localhost:3000/insights?start=2025-11-15T10:00:00&end=2025-11-16T10:00:00&server=srv-2
 
 ---
 
