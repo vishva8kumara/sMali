@@ -104,7 +104,7 @@ function generateBins(sinceTs, untilTs, intervalSeconds) {
  * @param {number} intervalSeconds Bin size in seconds. Not Used
  * @returns {number|null}          Index into bins[] or null if out of range
  */
-function findBinIndex(ts, bins, intervalSeconds) {
+function findBinIndex(ts, bins, _intervalSeconds) {
 	const tsMs = ts.getTime();
 	for (let i = 0; i < bins.length; i++) {
 		if (tsMs > bins[i].start && tsMs <= bins[i].end) {

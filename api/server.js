@@ -11,11 +11,11 @@ const generateInsightsLLM = require('./llm');
 // ------------------ DB CLIENT ------------------
 
 const analyticsDb = new pg.Client({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
+  host: process.env.ANALYTICS_DB_HOST,
+  port: process.env.ANALYTICS_DB_PORT,
+  user: process.env.ANALYTICS_DB_USER,
+  password: process.env.ANALYTICS_DB_PASS,
+  database: process.env.ANALYTICS_DB_NAME,
 });
 
 analyticsDb.connect()
@@ -71,7 +71,17 @@ async function fetchAvailablePeriods(server = false) {
 // API ROUTE
 // ------------------------------------------------
 
-app.get('/insights', async (req, res) => {
+async function auth(req, _res, next) {
+	console.log([
+      req.socket.remoteAddress, `[${new Date().toLocaleString()}]`,
+	  `"${req.method} ${req.url} HTTP/${req.httpVersion}"`
+    ].join(' '));
+	//
+	//	TO DO: Authenticate the user to access data and insights
+	next();
+}
+
+app.get('/insights', auth, async (req, res) => {
   try {
     const { start, end, server } = req.query;
 
@@ -94,6 +104,7 @@ app.get('/insights', async (req, res) => {
     return res.json({
       start,
       end,
+      server: (server || 'all'),
       response,
       //aggregates_count: aggregates.length,
       //data: restructured,
@@ -106,7 +117,7 @@ app.get('/insights', async (req, res) => {
   }
 });
 
-app.get('/periods', async (req, res) => {
+app.get('/periods', auth, async (req, res) => {
   try {
     const { server } = req.query;
 

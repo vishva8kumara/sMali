@@ -5,11 +5,11 @@ import dotenv from 'dotenv';
 dotenv.config(); // loads seeder/.env
 
 const client = new pg.Client({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT || 5432),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
+  host: process.env.RAW_DB_HOST,
+  port: Number(process.env.RAW_DB_PORT || 5432),
+  user: process.env.RAW_DB_USER,
+  password: process.env.RAW_DB_PASS,
+  database: process.env.RAW_DB_NAME,
 });
 
 const SERVERS = ['srv-1', 'srv-2', 'srv-3'];
@@ -56,7 +56,7 @@ function generateValue(server, metric, minute) {
 
 async function main() {
   await client.connect();
-  console.log('Connected to', process.env.DB_HOST);
+  console.log('Connected to', process.env.RAW_DB_HOST);
 
   console.log('Seeding raw metrics...');
 
