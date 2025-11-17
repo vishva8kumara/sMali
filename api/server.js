@@ -27,6 +27,12 @@ analyticsDb.connect()
 // ------------------------------------------------
 
 async function fetchAggregatedMetrics(startTs, endTs, server) {
+  if (startTs.length < 20 && startTs.indexOf('.') == -1)
+    startTs += '.000Z';
+  //
+  if (endTs.length < 20 && endTs.indexOf('.') == -1)
+    endTs += '.000Z';
+  //
   const res = await analyticsDb.query(
     `SELECT server_id, metric_type, ts, avg_value, min_value, max_value
     FROM aggregated_metrics
@@ -49,18 +55,22 @@ async function fetchAvailablePeriods(server = false) {
   function continuousPeriods(timestamps, stepMs = 20 * 60 * 1000) {
 	if (timestamps.length === 0)
 		return [];
+	const maxPeriod = stepMs * 5;
 	const periods = [];
 	let start = timestamps[0].ts;
 	let prev  = timestamps[0].ts;
+	let samples = 0;
 	for (let i = 1; i < timestamps.length; i++) {
 		const cur = timestamps[i].ts;
-		if (cur - prev > stepMs) {
-			periods.push({ start, end: prev });
+		samples += 1;
+		if (cur - prev > stepMs || prev - start > maxPeriod) {
+			periods.push({ samples, start, end: prev });
 			start = cur;
+			samples = 0;
 		}
 		prev = cur;
 	}
-	periods.push({ start, end: prev });
+	periods.push({ samples: samples+1, start, end: prev });
 	return periods;
   }
 
