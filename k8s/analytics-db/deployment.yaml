@@ -19,8 +19,22 @@ spec:
             - secretRef:
                 name: database-secrets
           env:
+
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: database-secrets
+                  key: ANALYTICS_DB_USER
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-secrets
+                  key: ANALYTICS_DB_PASS
+
             - name: POSTGRES_DB
               value: analyticsdb
+
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: analytics-data
