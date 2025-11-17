@@ -36,7 +36,7 @@ function generateValue(server, metric, minute) {
 
   // CPU spikes every 2 hours
   if (metric === 'cpu') {
-    if (minute % 120 === 0)
+    if (minute % 120 === 119)
       return base + Math.random() * 40 + 40;
   }
 
@@ -47,7 +47,7 @@ function generateValue(server, metric, minute) {
 
   // Massive IO bursts
   if (metric === 'disk_io') {
-    if (minute % 75 === 0)
+    if (minute % 75 === 74)
       return base + Math.random() * 200;
   }
 
@@ -62,7 +62,7 @@ async function main() {
 
   const now = Date.now();
   const rows = [];
-  const minutes = 24 * 60 * 2; // 2 days
+  const minutes = 24 * 60 * 0.75; // 1 day(s)
 
   for (let minute = 0; minute < minutes; minute++) {
     for (const server of SERVERS) {
