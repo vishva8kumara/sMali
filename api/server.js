@@ -39,16 +39,40 @@ async function fetchAggregatedMetrics(startTs, endTs, server) {
   return res.rows;
 }
 
-// --------------- LLM (MOCK OR REAL) ------------------
+async function fetchAvailablePeriods(server = false) {
+  const res = await analyticsDb.query(
+    `SELECT DISTINCT ts FROM public.aggregated_metrics `+
+	(server ? 'WHERE server_id = $1 ' : ' ')+
+    `ORDER BY ts ASC`,
+    ( server ? [server] : [] )
+  );
+  function continuousPeriods(timestamps, stepMs = 20 * 60 * 1000) {
+	if (timestamps.length === 0)
+		return [];
+	const periods = [];
+	let start = timestamps[0].ts;
+	let prev  = timestamps[0].ts;
+	for (let i = 1; i < timestamps.length; i++) {
+		const cur = timestamps[i].ts;
+		if (cur - prev > stepMs) {
+			periods.push({ start, end: prev });
+			start = cur;
+		}
+		prev = cur;
+	}
+	periods.push({ start, end: prev });
+	return periods;
+  }
 
-
+  return continuousPeriods( res.rows );
+}
 
 // ------------------------------------------------
 // API ROUTE
 // ------------------------------------------------
 
 app.get('/insights', async (req, res) => {
-  //try {
+  try {
     const { start, end, server } = req.query;
 
     if (!start || !end) {
@@ -70,14 +94,44 @@ app.get('/insights', async (req, res) => {
     return res.json({
       start,
       end,
-      //aggregates_count: aggregates.length,
       response,
-      data: restructured,
+      //aggregates_count: aggregates.length,
+      //data: restructured,
     });
-  /*} catch (err) {
+
+  }
+  catch (err) {
     console.error('Error:', err);
     res.status(500).json({ error: 'Server error', details: err.message });
-  }*/
+  }
+});
+
+app.get('/periods', async (req, res) => {
+  try {
+    const { server } = req.query;
+
+    const periods = await fetchAvailablePeriods(server);
+
+    if (periods.length === 0) {
+      return res.status(404).json({
+        message: 'No data. Run the pipeline',
+      });
+    }
+	const output = periods.map(p => {
+      const start = (new Date(p.start)).toISOString().replace('.000Z', '');
+      const end   = (new Date(p.end)).toISOString().replace('.000Z', '');
+      return {
+        ...p, url: `/insights?start=${start}&end=${end}`
+      };
+    });
+
+    return res.json({ output });
+
+  }
+  catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ error: 'Server error', details: err.message });
+  }
 });
 
 // ------------------------------------------------

@@ -30,8 +30,8 @@ CREATE TABLE IF NOT EXISTS analytics.aggregated_metrics (
 );
 CREATE INDEX IF NOT EXISTS idx_aggregated_metrics_ts 
     ON analytics.aggregated_metrics (ts DESC);
--- CREATE INDEX IF NOT EXISTS idx_aggregated_metrics_server_ts
---     ON analytics.aggregated_metrics (server_id, ts DESC);
+CREATE INDEX IF NOT EXISTS idx_aggregated_metrics_server_ts
+    ON analytics.aggregated_metrics (server_id, ts DESC);
 -- CREATE INDEX IF NOT EXISTS idx_aggregated_metrics_metric_ts
 --     ON analytics.aggregated_metrics (metric_type, ts DESC);
 

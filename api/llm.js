@@ -22,16 +22,18 @@ async function realOpenAILLM(restructured) {
   const text = JSON.stringify(restructured, null, 2);
 
   const prompt = `
-You are an expert systems engineer. Analyze the following aggregated server metrics (cpu, memory, disk_io, net_io):
+You are an expert platform engineer. Analyze the following aggregated server metrics:
 
 ${text}
 
-Provide:
-- trends
-- anomalies
-- spikes, mem-leaks or drifts
+Note: CPU and Memory in Percent usage, Disk I/O and Net I/O in MB/s
+
+Look for:
+- trends in comparison across servers
+- anomalies and patterns
+- spikes, memory leaks or drifts
 - high demand or low resources
-`;
+<analyze>`;
 //- high-level recommendations
 
   //console.log('Making API Request:', text);
