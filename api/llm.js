@@ -26,7 +26,7 @@ You are an expert platform engineer. Analyze the following aggregated server met
 
 ${text}
 
-Note: cpu and memory in Percent usage, disk_io and net_io in MB/s
+Note: CPU and Memory in Percent usage, Disk I/O and Net I/O in MB/s
 
 Look for:
 - trends in comparison across servers
