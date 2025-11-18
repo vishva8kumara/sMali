@@ -16,15 +16,18 @@ const SERVERS = ['srv-1', 'srv-2', 'srv-3'];
 const METRICS = ['cpu', 'memory', 'disk_io', 'net_io'];
 
 // ----- ARTIFACT EVENT GENERATORS -----
-
 function randomNormal(base, variance) {
   return base + (Math.random() - 0.5) * variance;
 }
 
 // ----- SELECT BEHAVIOR FOR EACH METRIC -----
+const seeds = {
+	cpu: { 'srv-1': 120, 'srv-2': 160, 'srv-3': 200 },
+	disk: { 'srv-1': 75, 'srv-2': 80, 'srv-3': 100 }
+};
 
 function generateValue(server, metric, minute) {
-  const serverOffset = server === 'srv-3' ? 25 : 0;
+  const serverOffset = server === 'srv-3' ? 15 : 0;
 
   let base =
     {
@@ -36,19 +39,25 @@ function generateValue(server, metric, minute) {
 
   // CPU spikes every 2 hours
   if (metric === 'cpu') {
-    if (minute % 120 === 119)
-      return base + Math.random() * 40 + 40;
+	if (minute % seeds.cpu[server] > seeds.cpu[server]-3)
+      return base + Math.random() * 25 + 40;
   }
 
   // Memory leak-like drift
   if (metric === 'memory' && server === 'srv-2') {
-    return base + minute * 0.3 + Math.random() * 2;
+    return Math.min(base + (minute % seeds.cpu[server]) * 0.3 + Math.random() * 5, 99);
   }
 
   // Massive IO bursts
   if (metric === 'disk_io') {
-    if (minute % 75 === 74)
-      return base + Math.random() * 200;
+    if (minute % seeds.disk[server] > seeds.disk[server]-3 || minute % seeds.cpu[server] < 2)
+      return base + Math.random() * 100 + 100;
+  }
+
+  // High net_io periods
+  if (metric === 'net_io' && server === 'srv-1') {
+    if (minute % seeds.disk[server] > seeds.disk[server] - (10 + Math.random() * 10))
+      return base + Math.random() * 100 + 100;
   }
 
   return randomNormal(base, 10);
