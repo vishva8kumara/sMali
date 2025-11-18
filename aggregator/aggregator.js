@@ -53,7 +53,7 @@ async function main() {
 
 			await dbHelper.storeAggregates(aggregates);
 
-			await dbHelper.setLastProcessedTs(now);//rows[rows.length-1].ts
+			await dbHelper.setLastProcessedTs(rows[rows.length-1].ts);//now
 			// boundary alignment safety:
 			// * Use (now) to ensure consistent hourly/5-minute bins - drops any deplayed data
 			// * Use (rows[rows.length-1].ts) to even capture delayed data - may violate consistat bins

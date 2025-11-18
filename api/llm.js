@@ -31,9 +31,11 @@ Note: CPU and Memory in Percent usage, Disk I/O and Net I/O in MB/s
 Look for:
 - trends in comparison across servers
 - anomalies and patterns
-- spikes, memory leaks or drifts
+- spikes, memory leaks -> OOMKill or drifts
 - high demand or low resources
+
 <analyze>`;
+//Emphasize important points at high-level.
 //- high-level recommendations
 
   //console.log('Making API Request:', text);

@@ -4,7 +4,7 @@ module.exports = function aggrHelper() {
 	/**
 	 * Aggregate raw metric rows into fixed time bins.
 	 *
-	 * Assigns each row to a bin (width = intervalSeconds) between sinceTs→untilTs,
+	 * Assigns each row to a bin (width = intervalSeconds) between sinceTs -> untilTs,
 	 * grouped by server_id + metric_type + binEnd. Computes avg/min/max/p90/p80
 	 * for each group and returns one aggregated record per bin.
 	 *
