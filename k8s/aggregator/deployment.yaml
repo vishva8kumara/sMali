@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: aggregator
-          image: docker.io/library/metrics-aggregator:latest
+          image: repo.maavee.net1/metrics-aggregator:latest
           envFrom:
             - configMapRef:
                 name: app-config

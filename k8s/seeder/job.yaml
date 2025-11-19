@@ -1,14 +1,14 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: db-seeder
+  name: metrics-seeder
 spec:
   template:
     spec:
       restartPolicy: Never
       containers:
         - name: seeder
-          image: docker.io/library/metrics-seeder:latest
+          image: repo.maavee.net1/metrics-seeder:latest
           envFrom:
             - configMapRef:
                 name: app-config
